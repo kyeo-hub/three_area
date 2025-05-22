@@ -2,6 +2,8 @@
 
 import * as THREE from "three";
 import { scene, manager } from "./world";
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { SRGBColorSpace } from 'three';
 
 /**
  * 创建标签板块
@@ -18,7 +20,7 @@ import { scene, manager } from "./world";
  * @param {number} fontSize
  */
 export function simpleText(x, y, z, inputText, fontSize) {
-  var text_loader = new THREE.FontLoader();
+  var text_loader = new FontLoader();
 
   text_loader.load("../src/jsm/Poppins_Regular.json", function (font) {
     var xMid, text;
@@ -36,7 +38,7 @@ export function simpleText(x, y, z, inputText, fontSize) {
 
     var shapes = font.generateShapes(message, fontSize);
 
-    var geometry = new THREE.ShapeBufferGeometry(shapes);
+    var geometry = new THREE.ShapeGeometry(shapes);
 
     geometry.computeBoundingBox();
 
@@ -61,7 +63,7 @@ export function simpleText(x, y, z, inputText, fontSize) {
  * @param {string} inputMessage
  */
 export function floatingLabel(x, y, z, inputMessage) {
-  var text_loader = new THREE.FontLoader();
+  var text_loader = new FontLoader();
 
   text_loader.load("../src/jsm/Poppins_Regular.json", function (font) {
     var xMid, text;
@@ -79,7 +81,7 @@ export function floatingLabel(x, y, z, inputMessage) {
 
     var shapes = font.generateShapes(message, 1);
 
-    var geometry = new THREE.ShapeBufferGeometry(shapes);
+    var geometry = new THREE.ShapeGeometry(shapes);
 
     geometry.computeBoundingBox();
 
@@ -120,13 +122,13 @@ export function allSkillsSection(
   let quat = { x: 0, y: 0, z: 0, w: 1 };
   let mass = 0; //mass of zero = infinite mass
 
-  var geometry = new THREE.PlaneBufferGeometry(xScale, zScale);
+  var geometry = new THREE.PlaneGeometry(xScale, zScale);
 
   const loader = new THREE.TextureLoader(manager);
   const texture = loader.load(boxTexture);
   texture.magFilter = THREE.LinearFilter;
   texture.minFilter = THREE.LinearFilter;
-  texture.encoding = THREE.sRGBEncoding;
+  texture.colorSpace = SRGBColorSpace;
   const loadedTexture = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -153,7 +155,7 @@ export function allSkillsSection(
  * @param {number} size2
  */
 export function createTextOnPlane(x, y, z, inputText, size1, size2) {
-  var activitiesGeometry = new THREE.PlaneBufferGeometry(size1, size2);
+  var activitiesGeometry = new THREE.PlaneGeometry(size1, size2);
   const loader = new THREE.TextureLoader(manager);
   var activitiesTexture = loader.load(inputText);
   activitiesTexture.magFilter = THREE.NearestFilter;

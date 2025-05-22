@@ -4,6 +4,7 @@ import * as THREE from 'three';
 import Stats from 'stats.js';
 import galaxyVertexShader from '../jsm/vertex.glsl';
 import galaxyFragmentShader from '../jsm/fragment.glsl';
+import { SRGBColorSpace } from 'three'; // Import SRGBColorSpace
 
 // 定义three.js 场景
 export let clock,
@@ -127,13 +128,13 @@ export function createLensFlare(x, y, z, xScale, zScale, boxTexture) {
   let quat = { x: 0, y: 0, z: 0, w: 1 };
   let mass = 0; //mass of zero = infinite mass
 
-  var geometry = new THREE.PlaneBufferGeometry(xScale, zScale);
+  var geometry = new THREE.PlaneGeometry(xScale, zScale);
 
   const loader = new THREE.TextureLoader();
   const texture = loader.load(boxTexture);
   texture.magFilter = THREE.LinearFilter;
   texture.minFilter = THREE.LinearFilter;
-  texture.encoding = THREE.sRGBEncoding;
+  texture.colorSpace = SRGBColorSpace;
   const loadedTexture = new THREE.MeshBasicMaterial({
     map: texture,
     transparent: true,
@@ -152,15 +153,18 @@ export function createLensFlare(x, y, z, xScale, zScale, boxTexture) {
 
 // 天空小光点
 export function addParticles() {
-  var geometry = new THREE.Geometry();
+  const particlesCount = 3000;
+  const positions = new Float32Array(particlesCount * 3);
 
-  for (let i = 0; i < 3000; i++) {
-    var vertex = new THREE.Vector3();
-    vertex.x = getRandomArbitrary(-1100, 1100);
-    vertex.y = getRandomArbitrary(-1100, 1100);
-    vertex.z = getRandomArbitrary(-1100, -500);
-    geometry.vertices.push(vertex);
+  for (let i = 0; i < particlesCount; i++) {
+    const i3 = i * 3;
+    positions[i3 + 0] = getRandomArbitrary(-1100, 1100);
+    positions[i3 + 1] = getRandomArbitrary(-1100, 1100);
+    positions[i3 + 2] = getRandomArbitrary(-1100, -500);
   }
+
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
   var material = new THREE.PointsMaterial({ size: 3 });
   particleSystemObject = new THREE.Points(geometry, material);
@@ -273,8 +277,8 @@ export const generateGalaxy = () => {
    * 自定义Material
    */
   galaxyMaterial = new THREE.ShaderMaterial({
-    size: parameters.size,
-    sizeAttenuation: true,
+    // size: parameters.size,
+    // sizeAttenuation: true,
     depthWrite: false,
     blending: THREE.AdditiveBlending,
     vertexColors: true,

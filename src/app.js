@@ -1,6 +1,10 @@
+
 import * as THREE from 'three';
 import { WEBGL } from './WebGL';
 import * as Ammo from './libs/ammo';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js'; // Import FontLoader
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js'; // Import TextGeometry for text meshes
+import { SRGBColorSpace } from 'three'; // Import SRGBColorSpace
 // 导入材质
 import {
   billboardTextures,
@@ -70,6 +74,14 @@ import {
 
 export let cursorHoverObjects = [];
 
+// Global font loading for text geometry used in notifications and other text elements
+export let loadedAppFont = null;
+const appFontLoader = new FontLoader();
+appFontLoader.load('./src/jsm/Poppins_Regular.json', function (font) {
+    loadedAppFont = font;
+    console.log('App font loaded globally.');
+});
+
 // Ammo物理引擎载入
 Ammo().then((Ammo) => {
   let rigidBodies = [],
@@ -113,7 +125,7 @@ Ammo().then((Ammo) => {
     scene.add(grid);
 
     let blockPlane = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(),
+      new THREE.BoxGeometry(),
       new THREE.MeshPhongMaterial({
         color: 0xffffff,
         transparent: true,
@@ -167,7 +179,7 @@ Ammo().then((Ammo) => {
     marbleTexture.wrapS = marbleTexture.wrapT = THREE.RepeatWrapping;
     marbleTexture.repeat.set(1, 1);
     marbleTexture.anisotropy = 1;
-    marbleTexture.encoding = THREE.sRGBEncoding;
+    marbleTexture.colorSpace = THREE.SRGBColorSpace;
 
     //threeJS Section
     let ball = (ballObject = new THREE.Mesh(
@@ -238,7 +250,7 @@ Ammo().then((Ammo) => {
     beachTexture.wrapS = beachTexture.wrapT = THREE.RepeatWrapping;
     beachTexture.repeat.set(1, 1);
     beachTexture.anisotropy = 1;
-    beachTexture.encoding = THREE.sRGBEncoding;
+    beachTexture.colorSpace = THREE.SRGBColorSpace;
 
     //threeJS Section
     let ball = new THREE.Mesh(
@@ -292,7 +304,8 @@ Ammo().then((Ammo) => {
     boxTexture,
     URLLink,
     color = 0x000000,
-    transparent = true
+    transparent = true,
+    clickAction = 'jump' // Add optional clickAction parameter, default to 'jump'
   ) {
     const boxScale = { x: scaleX, y: scaleY, z: scaleZ };
     let quat = { x: 0, y: 0, z: 0, w: 1 };
@@ -303,7 +316,7 @@ Ammo().then((Ammo) => {
     const texture = loader.load(boxTexture);
     texture.magFilter = THREE.LinearFilter;
     texture.minFilter = THREE.LinearFilter;
-    texture.encoding = THREE.sRGBEncoding;
+    texture.colorSpace = THREE.SRGBColorSpace;
     const loadedTexture = new THREE.MeshBasicMaterial({
       map: texture,
       transparent: transparent,
@@ -325,14 +338,15 @@ Ammo().then((Ammo) => {
     ];
 
     const linkBox = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(boxScale.x, boxScale.y, boxScale.z),
+      new THREE.BoxGeometry(boxScale.x, boxScale.y, boxScale.z),
       materials
     );
     linkBox.position.set(x, y, z);
     linkBox.renderOrder = 1;
     linkBox.castShadow = true;
     linkBox.receiveShadow = true;
-    linkBox.userData = { URL: URLLink, email: URLLink };
+    // Add clickAction to userData
+    linkBox.userData = { URL: URLLink, email: URLLink, clickAction: clickAction };
     scene.add(linkBox);
     objectsWithLinks.push(linkBox.uuid);
 
@@ -348,7 +362,7 @@ Ammo().then((Ammo) => {
     let mass = 0; //mass of zero = infinite mass
 
     const linkBox = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(boxScale.x, boxScale.y, boxScale.z),
+      new THREE.BoxGeometry(boxScale.x, boxScale.y, boxScale.z),
       new THREE.MeshPhongMaterial({
         color: 0xff6600,
       })
@@ -364,7 +378,7 @@ Ammo().then((Ammo) => {
 
   // 'AirHua'
   function loadRyanText() {
-    var text_loader = new THREE.FontLoader();
+    var text_loader = new FontLoader();
 
     text_loader.load('./src/jsm/Poppins_Regular.json', function (font) {
       var xMid, text;
@@ -376,9 +390,10 @@ Ammo().then((Ammo) => {
         new THREE.MeshPhongMaterial({ color: color }), // side
       ];
 
-      var geometry = new THREE.TextGeometry("AirHua", {
+      var geometry = new TextGeometry("Kyeo", {
         font: font,
         size: 3,
+        depth: 1,
         height: 0.5,
         curveSegments: 12,
         bevelEnabled: true,
@@ -395,7 +410,7 @@ Ammo().then((Ammo) => {
 
       geometry.translate(xMid, 0, 0);
 
-      var textGeo = new THREE.BufferGeometry().fromGeometry(geometry);
+      // In newer Three.js, TextGeometry extends BufferGeometry, so no need for fromGeometry
 
       text = new THREE.Mesh(geometry, textMaterials);
       text.position.z = -20;
@@ -408,7 +423,7 @@ Ammo().then((Ammo) => {
 
   //create "Life is loving"
   function loadEngineerText() {
-    var text_loader = new THREE.FontLoader();
+    var text_loader = new FontLoader();
 
     text_loader.load('./src/jsm/Poppins_Regular.json', function (font) {
       var xMid, text;
@@ -420,8 +435,9 @@ Ammo().then((Ammo) => {
         new THREE.MeshPhongMaterial({ color: color }), // side
       ];
 
-      var geometry = new THREE.TextGeometry('Life is loving', {
+      var geometry = new TextGeometry('Life is loving', {
         font: font,
+        depth: 1,
         size: 1.5,
         height: 0.5,
         curveSegments: 20,
@@ -437,9 +453,9 @@ Ammo().then((Ammo) => {
 
       geometry.translate(xMid, 0, 0);
 
-      var textGeo = new THREE.BufferGeometry().fromGeometry(geometry);
+      // In newer Three.js, TextGeometry extends BufferGeometry, so no need for fromGeometry
 
-      text = new THREE.Mesh(textGeo, textMaterials);
+      text = new THREE.Mesh(geometry, textMaterials);
       text.position.z = -20;
       text.position.y = 0.1;
       text.position.x = 14;
@@ -465,7 +481,7 @@ Ammo().then((Ammo) => {
     const loader = new THREE.TextureLoader(manager);
 
     const billboardPole = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(
+      new THREE.BoxGeometry(
         billboardPoleScale.x,
         billboardPoleScale.y,
         billboardPoleScale.z
@@ -478,7 +494,7 @@ Ammo().then((Ammo) => {
     const texture = loader.load(textureImage);
     texture.magFilter = THREE.LinearFilter;
     texture.minFilter = THREE.LinearFilter;
-    texture.encoding = THREE.sRGBEncoding;
+    texture.colorSpace = THREE.SRGBColorSpace;
     var borderMaterial = new THREE.MeshBasicMaterial({
       color: 0x000000,
     });
@@ -546,7 +562,7 @@ Ammo().then((Ammo) => {
     /* default texture loading */
     const loader = new THREE.TextureLoader(manager);
     const billboardPole = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(
+      new THREE.BoxGeometry(
         billboardPoleScale.x,
         billboardPoleScale.y,
         billboardPoleScale.z
@@ -558,7 +574,7 @@ Ammo().then((Ammo) => {
     const texture = loader.load(textureImage);
     texture.magFilter = THREE.LinearFilter;
     texture.minFilter = THREE.LinearFilter;
-    texture.encoding = THREE.sRGBEncoding;
+    texture.colorSpace = SRGBColorSpace;
     var borderMaterial = new THREE.MeshBasicMaterial({
       color: 0x000000,
     });
@@ -617,7 +633,7 @@ Ammo().then((Ammo) => {
     const wallScale = { x: 0.125, y: 4, z: 175 };
 
     const wall = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(wallScale.x, wallScale.y, wallScale.z),
+      new THREE.BoxGeometry(wallScale.x, wallScale.y, wallScale.z),
       new THREE.MeshStandardMaterial({
         color: 0xffffff,
         opacity: 0.75,
@@ -641,7 +657,7 @@ Ammo().then((Ammo) => {
     const wallScale = { x: 175, y: 4, z: 0.125 };
 
     const wall = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(wallScale.x, wallScale.y, wallScale.z),
+      new THREE.BoxGeometry(wallScale.x, wallScale.y, wallScale.z),
       new THREE.MeshStandardMaterial({
         color: 0xffffff,
         opacity: 0.75,
@@ -722,7 +738,7 @@ Ammo().then((Ammo) => {
   // 创建砖块
   function createBrick(sx, sy, sz, mass, pos, quat, material) {
     var threeObject = new THREE.Mesh(
-      new THREE.BoxBufferGeometry(sx, sy, sz, 1, 1, 1),
+      new THREE.BoxGeometry(sx, sy, sz, 1, 1, 1),
       material
     );
     var shape = new Ammo.btBoxShape(
@@ -775,24 +791,26 @@ Ammo().then((Ammo) => {
 
   // 触发
   function createTriangle(x, z) {
-    var geom = new THREE.Geometry();
-    var v1 = new THREE.Vector3(4, 0, 0);
-    var v2 = new THREE.Vector3(5, 0, 0);
-    var v3 = new THREE.Vector3(4.5, 1, 0);
+    // Define vertices for the triangle
+    const vertices = new Float32Array([
+        4, 0, 0, // v1
+        5, 0, 0, // v2
+        4.5, 1, 0  // v3
+    ]);
 
-    geom.vertices.push(v1);
-    geom.vertices.push(v2);
-    geom.vertices.push(v3);
+    // Define indices for the triangle face
+    const indices = new Uint16Array([
+        0, 1, 2,
+    ]);
 
-    geom.faces.push(new THREE.Face3(0, 1, 2));
-    geom.computeFaceNormals();
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3));
+    geometry.setIndex(new THREE.BufferAttribute(indices, 1));
 
-    var mesh = new THREE.Mesh(
-      geom,
-      new THREE.MeshBasicMaterial({ color: 0xffffff })
-    );
+    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    const mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = -Math.PI * 0.5;
-    //mesh.rotation.z = -90;
     mesh.position.y = 0.01;
     mesh.position.x = x;
     mesh.position.z = z;
@@ -1038,7 +1056,8 @@ Ammo().then((Ammo) => {
       boxTexture.Github,
       URL.gitHub,
       0x000000,
-      true
+      true,
+      'copy' // Specify clickAction as 'copy'
     );
 
     // Bilibili
@@ -1052,7 +1071,8 @@ Ammo().then((Ammo) => {
       boxTexture.BiliBili,
       URL.BiliBili,
       0x000000,
-      false
+      false,
+      'copy' // Specify clickAction as 'copy'
     );
 
     // 邮箱
@@ -1066,7 +1086,8 @@ Ammo().then((Ammo) => {
       boxTexture.mail,
       'airhua602@gmail.com',
       0x000000,
-      false
+      false,
+      'copy' // Specify clickAction as 'copy'
     );
 
     // QQ
@@ -1078,9 +1099,10 @@ Ammo().then((Ammo) => {
       4,
       1,
       boxTexture.QQ,
-      URL.devTo,
+      URL.devTo, // Note: This URL was URL.devTo in the original, is this intended for the QQ box? Assuming it is for now.
       0x000000,
-      false
+      false,
+      'copy' // Specify clickAction as 'copy'
     );
 
     // 浮动文字
