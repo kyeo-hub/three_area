@@ -4,7 +4,8 @@ import * as THREE from 'three';
 import Stats from 'stats.js';
 import galaxyVertexShader from '../jsm/vertex.glsl';
 import galaxyFragmentShader from '../jsm/fragment.glsl';
-import { SRGBColorSpace } from 'three'; // Import SRGBColorSpace
+import { SRGBColorSpace, PMREMGenerator } from 'three'; // Import SRGBColorSpace
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 // 定义three.js 场景
 export let clock,
@@ -79,6 +80,25 @@ export function createWorld() {
   renderer.gammaOutput = true;
 
   renderer.shadowMap.enabled = true;
+}
+
+// 导出 HDRI 加载函数
+export function loadHDRBackground() {
+  const loader = new RGBELoader();
+  loader.load('./src/jsm/environment/kloppenheim_06_puresky_4k.hdr', function (texture) {
+    texture.mapping = THREE.EquirectangularReflectionMapping;
+
+    // 创建预过滤环境贴图
+    const pmremGenerator = new PMREMGenerator(renderer);
+    pmremGenerator.compileEquirectangularShader();
+
+    const envMap = pmremGenerator.fromEquirectangular(texture).texture;
+    scene.environment = envMap; // 设置全局光照环境
+    scene.background = envMap;  // 设置背景为 HDRI 背景
+
+    texture.dispose();
+    pmremGenerator.dispose();
+  });
 }
 
 // 地图中的旋转粒子堆

@@ -5,6 +5,7 @@ import * as Ammo from './libs/ammo';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js'; // Import FontLoader
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js'; // Import TextGeometry for text meshes
 import { SRGBColorSpace } from 'three'; // Import SRGBColorSpace
+
 // 导入材质
 import {
   billboardTextures,
@@ -55,6 +56,7 @@ import {
   galaxyMaterial,
   galaxyClock,
   galaxyPoints,
+  loadHDRBackground
 } from './resources/world';
 
 import {
@@ -78,8 +80,8 @@ export let cursorHoverObjects = [];
 export let loadedAppFont = null;
 const appFontLoader = new FontLoader();
 appFontLoader.load('./src/jsm/Poppins_Regular.json', function (font) {
-    loadedAppFont = font;
-    console.log('App font loaded globally.');
+  loadedAppFont = font;
+  console.log('App font loaded globally.');
 });
 
 // Ammo物理引擎载入
@@ -112,31 +114,89 @@ Ammo().then((Ammo) => {
     physicsWorld.setGravity(new Ammo.btVector3(0, -50, 0));
   }
 
-  function createGridPlane() {
+  // function createGridPlane() {
+  //   let pos = { x: 0, y: -0.25, z: 0 };
+  //   let scale = { x: 175, y: 0.5, z: 175 };
+  //   let quat = { x: 0, y: 0, z: 0, w: 1 };
+  //   let mass = 0;
+
+  //   var grid = new THREE.GridHelper(175, 20, 0xffffff, 0xffffff);
+  //   grid.material.opacity = 0.5;
+  //   grid.material.transparent = true;
+  //   grid.position.y = 0.005;
+  //   scene.add(grid);
+
+  //   let blockPlane = new THREE.Mesh(
+  //     new THREE.BoxGeometry(),
+  //     new THREE.MeshPhongMaterial({
+  //       color: 0xffffff,
+  //       transparent: true,
+  //       opacity: 0.25,
+  //     })
+  //   );
+  //   blockPlane.position.set(pos.x, pos.y, pos.z);
+  //   blockPlane.scale.set(scale.x, scale.y, scale.z);
+  //   blockPlane.receiveShadow = true;
+  //   scene.add(blockPlane);
+
+  //   let transform = new Ammo.btTransform();
+  //   transform.setIdentity();
+  //   transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+  //   transform.setRotation(
+  //     new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w)
+  //   );
+  //   let motionState = new Ammo.btDefaultMotionState(transform);
+
+  //   let colShape = new Ammo.btBoxShape(
+  //     new Ammo.btVector3(scale.x * 0.5, scale.y * 0.5, scale.z * 0.5)
+  //   );
+  //   colShape.setMargin(0.05);
+
+  //   let localInertia = new Ammo.btVector3(0, 0, 0);
+  //   colShape.calculateLocalInertia(mass, localInertia);
+
+  //   let rigidBodyStruct = new Ammo.btRigidBodyConstructionInfo(
+  //     mass,
+  //     motionState,
+  //     colShape,
+  //     localInertia
+  //   );
+  //   let body = new Ammo.btRigidBody(rigidBodyStruct);
+  //   body.setFriction(10);
+  //   body.setRollingFriction(10);
+
+  //   // add to world
+  //   physicsWorld.addRigidBody(body);
+  // }
+
+  function createGrassPlane() {
     let pos = { x: 0, y: -0.25, z: 0 };
     let scale = { x: 175, y: 0.5, z: 175 };
     let quat = { x: 0, y: 0, z: 0, w: 1 };
     let mass = 0;
 
-    var grid = new THREE.GridHelper(175, 20, 0xffffff, 0xffffff);
-    grid.material.opacity = 0.5;
-    grid.material.transparent = true;
-    grid.position.y = 0.005;
-    scene.add(grid);
+    // 加载草地贴图
+    const loader = new THREE.TextureLoader(manager);
+    const grassTexture = loader.load('./src/jsm/grass.jpg'); // 草地贴图路径
+    grassTexture.wrapS = grassTexture.wrapT = THREE.RepeatWrapping;
+    grassTexture.repeat.set(50, 50); // 根据需要调整重复次数
+    grassTexture.colorSpace = THREE.SRGBColorSpace;
 
+    // 创建草地材质和网格
     let blockPlane = new THREE.Mesh(
-      new THREE.BoxGeometry(),
-      new THREE.MeshPhongMaterial({
-        color: 0xffffff,
-        transparent: true,
-        opacity: 0.25,
+      new THREE.BoxGeometry(scale.x, scale.y, scale.z),
+      new THREE.MeshStandardMaterial({
+        map: grassTexture,
+        transparent: false,
+        metalness: 0.1,
+        roughness: 0.9
       })
     );
     blockPlane.position.set(pos.x, pos.y, pos.z);
-    blockPlane.scale.set(scale.x, scale.y, scale.z);
     blockPlane.receiveShadow = true;
     scene.add(blockPlane);
 
+    // 创建 Ammo.js 物理碰撞体
     let transform = new Ammo.btTransform();
     transform.setIdentity();
     transform.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
@@ -163,9 +223,9 @@ Ammo().then((Ammo) => {
     body.setFriction(10);
     body.setRollingFriction(10);
 
-    // add to world
     physicsWorld.addRigidBody(body);
   }
+
 
   // 创建操控主小球
   function createBall() {
@@ -376,7 +436,7 @@ Ammo().then((Ammo) => {
     addRigidPhysics(linkBox, boxScale);
   }
 
-  // 'AirHua'
+  // 'Author'
   function loadRyanText() {
     var text_loader = new FontLoader();
 
@@ -421,7 +481,7 @@ Ammo().then((Ammo) => {
     });
   }
 
-  //create "Life is loving"
+  //create "BIO"
   function loadEngineerText() {
     var text_loader = new FontLoader();
 
@@ -793,14 +853,14 @@ Ammo().then((Ammo) => {
   function createTriangle(x, z) {
     // Define vertices for the triangle
     const vertices = new Float32Array([
-        4, 0, 0, // v1
-        5, 0, 0, // v2
-        4.5, 1, 0  // v3
+      4, 0, 0, // v1
+      5, 0, 0, // v2
+      4.5, 1, 0  // v3
     ]);
 
     // Define indices for the triangle face
     const indices = new Uint16Array([
-        0, 1, 2,
+      0, 1, 2,
     ]);
 
     const geometry = new THREE.BufferGeometry();
@@ -878,7 +938,7 @@ Ammo().then((Ammo) => {
   function renderFrame() {
     stats.begin();
 
-    const elapsedTime = galaxyClock.getElapsedTime() + 150;
+    // const elapsedTime = galaxyClock.getElapsedTime() + 150;
 
     let deltaTime = clock.getDelta();
     if (!isTouchscreenDevice())
@@ -896,12 +956,12 @@ Ammo().then((Ammo) => {
 
     updatePhysics(deltaTime);
 
-    moveParticles();
+    // moveParticles();
 
     renderer.render(scene, camera);
     stats.end();
 
-    galaxyMaterial.uniforms.uTime.value = elapsedTime * 5;
+    // galaxyMaterial.uniforms.uTime.value = elapsedTime * 5;
     //galaxyPoints.position.set(-50, -50, 0);
 
     // tells browser theres animation, update before the next repaint
@@ -958,7 +1018,7 @@ Ammo().then((Ammo) => {
   function onWindowResize() {
     camera.aspect = window.innerWidth / window.innerHeight
     camera.updateProjectionMatrix()
-    
+
     renderer.setSize(window.innerWidth, window.innerHeight)
     renderFrame()
   }
@@ -1000,7 +1060,9 @@ Ammo().then((Ammo) => {
     createWorld();
     createPhysicsWorld();
 
-    createGridPlane();
+    createGrassPlane();
+
+    // createGridPlane();
     createBall();
 
     // 这里调整边界
@@ -1113,12 +1175,12 @@ Ammo().then((Ammo) => {
 
     // 图片贴图
     allSkillsSection(-50, 0.025, 20, 40, 40, boxTexture.allSkills);
-    allSkillsSection(61, 0.025, 13, 30, 60, inputText.activities);
+    allSkillsSection(61, 0.025, 20, 30, 60, inputText.activities);
     allSkillsSection(8.5, 0.025, 54, 7, 3.5, boxTexture.skrillex);
     allSkillsSection(9, 0.01, 45, 15, 15, boxTexture.edmText);
     allSkillsSection(9, 0.01, 20, 21, 10.5, inputText.staticPortfolio);
 
-    createLensFlare(50, -50, -800, 200, 200, boxTexture.lensFlareMain);
+    // createLensFlare(50, -50, -800, 200, 200, boxTexture.lensFlareMain);
 
     loadRyanText();
     loadEngineerText();
@@ -1130,7 +1192,7 @@ Ammo().then((Ammo) => {
     } else {
       allSkillsSection(9, 0.01, 5, 20, 10, inputText.pcControl);
     }
-    
+
     allSkillsSection(23, 0.01, -60, 20, 10, inputText.link);
 
     // 板块文字
@@ -1144,9 +1206,14 @@ Ammo().then((Ammo) => {
     createTriangle(63, -47);
     createTriangle(63, -43);
 
-    addParticles();
-    glowingParticles();
-    generateGalaxy();
+
+    loadHDRBackground();
+
+    
+
+    // addParticles();
+    // glowingParticles();
+    // generateGalaxy();
 
     setupEventHandlers();
     renderFrame();

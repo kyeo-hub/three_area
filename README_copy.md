@@ -1,10 +1,6 @@
-# 3d个人网站
 
-最终效果：[love.huabyte.com](love.huabyte.com)
-
-<video autoplay src="https://assets.huabyte.com/blog/image/Tab-1645529042263.webm"></video>
-
-我自己的3d网站也是根据国外大佬改的，这里先放大佬源码地址：[https://github.com/0xFloyd/Portfolio_2020](https://github.com/0xFloyd/Portfolio_2020)
+# three_area
+My thress.js area, Copy from [https://github.com/0xFloyd/Portfolio_2020](https://github.com/0xFloyd/Portfolio_2020)
 
 ## 项目环境
 
@@ -12,17 +8,13 @@
 
 安装一个编辑器，推荐[vscode](https://code.visualstudio.com/)
 
-> 实不会的参考一下教程，也可以自行搜索
->
-> node安装与配置：[https://www.bilibili.com/video/BV11V411o7Zh](https://www.bilibili.com/video/BV11V411o7Zh)
->
-> vscode安装与配置：[https://www.bilibili.com/video/BV1P64y187Fh](https://www.bilibili.com/video/BV1P64y187Fh)
+
 
 ## 项目运行
 
 ```
 // 安装依赖
-npm install & cnpm install
+npm install
 
 // 本地运行
 npm run dev
@@ -85,7 +77,7 @@ SVG.reactLogo = '../src/jsm/react-svg.svg';
 // 链接的跳转地址
 let URL = {};
 URL.blog =
-  'https://huabyte.com';
+  'https://blog.kyeo.top';
 URL.ryanfloyd = 'https://huabyte.com';
 URL.fund = 'https://github.com/AirHua-byte/FundSpider';
 URL.gitHub = 'https://github.com/AirHua-byte';

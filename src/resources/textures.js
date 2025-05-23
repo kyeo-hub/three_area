@@ -43,7 +43,7 @@ SVG.reactLogo = '../src/jsm/react-svg.svg';
 // 链接的跳转地址
 let URL = {};
 URL.blog =
-  'https://huabyte.com';
+  'https://blog.kyeo.top';
 URL.ryanfloyd = 'https://huabyte.com';
 URL.fund = 'https://github.com/AirHua-byte/FundSpider';
 URL.gitHub = 'https://github.com/AirHua-byte';
